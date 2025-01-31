@@ -3,6 +3,7 @@
 \documentclass[lang=cn,a4paper,newtx]{elegantpaper}
 
 \title{DeepSeek-R1：通过强化学习激励大语言模型的推理能力}
+\author{左元翻译}
 
 % 本文档命令
 \usepackage{array}
@@ -18,6 +19,10 @@
 \begin{abstract}
   本文介绍了我们的第一代推理模型，DeepSeek-R1-Zero 和 DeepSeek-R1。DeepSeek-R1-Zero 是通过大规模强化学习（RL）训练的模型，在没有使用监督微调（SFT）这个前置步骤的情况下，展示了卓越的推理能力。通过 RL，DeepSeek-R1-Zero 自然而然的展现出了许多强大而有趣的推理行为。然而，它也面临一些挑战，如可读性差和多种语言的混合等问题。为了解决这些问题并进一步提高推理性能，我们引入了 DeepSeek-R1，该模型在 RL 之前结合了多阶段训练和冷启动数据。DeepSeek-R1 在推理任务中的表现与 OpenAI-o1-1217 相当。为了支持社区的研究，我们开源了 DeepSeek-R1-Zero、DeepSeek-R1 以及六个密集模型（1.5B、7B、8B、14B、32B、70B），这六个密集模型基于 Qwen 和 Llama，从 DeepSeek-R1 蒸馏而来。
 \end{abstract}
+
+\newpage
+\tableofcontents
+\newpage
 
 \section{简介}
 
