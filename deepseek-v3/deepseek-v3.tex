@@ -1,0 +1,80 @@
+%!TEX program = xelatex
+% 完整编译: xelatex -> biber/bibtex -> xelatex -> xelatex
+\documentclass[lang=cn,a4paper,newtx]{elegantpaper}
+
+\title{DeepSeek-V3技术报告}
+\author{左元翻译}
+
+% 本文档命令
+\usepackage{array}
+\newcommand{\ccr}[1]{\makecell{{\color{#1}\rule{1cm}{1cm}}}}
+
+% DeepSeek 67B
+\newcommand{\dsvi}{DeepSeek 67B}
+\newcommand{\dsvic}{DeepSeek 67B Chat}
+% DeepSeek-V2
+\newcommand{\dsvii}{DeepSeek-V2}
+\newcommand{\dsviic}{DeepSeek-V2 Chat}
+\newcommand{\dsviisft}{DeepSeek-V2 Chat (SFT)}
+\newcommand{\dsviirl}{DeepSeek-V2 Chat (RL)}
+\newcommand{\dsattn}{MLA}
+\newcommand{\dsmoe}{DeepSeekMoE}
+\newcommand{\dsviilite}{DeepSeek-V2-Lite}
+% DeepSeek-V3
+\newcommand{\dsviii}{DeepSeek-V3}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+    我们推出了\dsviii{}，这是一个强大的混合专家（Mixture-of-Experts, MoE）语言模型，总参数量为6710亿，每个token激活的参数量为370亿。  
+    为了实现高效的推理和成本效益高的训练，\dsviii{}采用了多头潜在注意力（Multi-head Latent Attention, MLA）和\dsmoe{}架构，这些架构在\dsvii{}中得到了充分验证。  
+    此外，\dsviii{}首创了一种无辅助损失的负载均衡策略，并设定了多token预测的训练目标，以实现更强的性能。  
+    我们在14.8万亿个多样且高质量的token上对\dsviii{}进行了预训练，随后通过监督微调（Supervised Fine-Tuning）和强化学习（Reinforcement Learning）阶段充分挖掘其潜力。  
+    综合评估表明，\dsviii{}的表现优于其他开源模型，并与领先的闭源模型性能相当。  
+    尽管性能卓越，\dsviii{}的完整训练仅需278.8万H800 GPU小时。  
+    此外，其训练过程非常稳定。在整个训练过程中，我们没有遇到任何不可恢复的损失突增或执行任何回滚操作。  
+    模型检查点可在\url{https://github.com/deepseek-ai/DeepSeek-V3}获取。
+\end{abstract}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/dsv3_performance.pdf}
+\caption{
+    \centering
+    \dsviii{} 和竞品在性能基准测试中的比较。
+}
+\label{fig:dsv3_performance}
+\end{figure}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\section{简介}
+
+近年来，大语言模型（Large Language Models, LLMs）正在经历快速的迭代和演进，逐步缩小与通用人工智能（Artificial General Intelligence, AGI）的差距。
+除了闭源模型外，开源模型，包括DeepSeek系列、LLaMA系列、Qwen系列和Mistral系列，也在取得显著进展，努力缩小与闭源模型的差距。  
+为了进一步突破开源模型的能力边界，我们扩大了模型规模，并推出了\dsviii{}，这是一个拥有6710亿参数的大型混合专家（Mixture-of-Experts, MoE）模型，其中每个token激活的参数量为370亿。
+
+以前瞻性的视角，我们始终致力于实现强大的模型性能和经济的成本。  
+因此，在架构方面，\dsviii{}仍然采用多头潜在注意力（\dsattn{}）以实现高效推理，以及\dsmoe{}以实现成本效益高的训练。  
+这两种架构在\dsvii{}中得到了验证，证明了它们在保持强大模型性能的同时实现高效训练和推理的能力。  
+除了基础架构外，我们还实施了两项额外策略以进一步增强模型能力。  
+首先，\dsviii{}首创了一种无辅助损失的负载均衡策略，旨在最小化因鼓励负载均衡而对模型性能产生的负面影响。  
+其次，\dsviii{}采用了多token预测的训练目标，我们观察到这可以提升评估基准上的整体性能。
+
+为了实现高效的训练，我们支持FP8混合精度训练，并对训练框架进行了全面优化。  
+低精度训练已成为高效训练的一种有前景的解决方案，其发展与硬件能力的进步密切相关。  
+在这项工作中，我们引入了FP8混合精度训练框架，并首次在超大规模模型上验证了其有效性。  
+通过支持FP8计算和存储，我们实现了训练加速和GPU内存使用量的减少。  
+在训练框架方面，我们设计了DualPipe算法以实现高效的流水线并行，该算法减少了流水线气泡，并通过计算-通信重叠隐藏了训练过程中的大部分通信。  
+这种重叠确保了随着模型的进一步扩展，只要我们保持恒定的计算与通信比率，我们仍然可以在节点间使用细粒度的专家，同时实现近乎零的全对全通信开销。  
+此外，我们还开发了高效的跨节点全对全通信内核，以充分利用InfiniBand（IB）和NVLink的带宽。  
+此外，我们精心优化了内存占用，使得在不使用昂贵的张量并行的情况下训练\dsviii{}成为可能。  
+结合这些努力，我们实现了高效的训练。
+
+\end{document}
