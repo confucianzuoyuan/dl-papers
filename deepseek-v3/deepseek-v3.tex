@@ -77,4 +77,76 @@
 此外，我们精心优化了内存占用，使得在不使用昂贵的张量并行的情况下训练\dsviii{}成为可能。  
 结合这些努力，我们实现了高效的训练。
 
+在预训练阶段，我们在14.8万亿个高质量且多样化的token上训练了\dsviii{}。  
+预训练过程非常稳定。在整个训练过程中，我们没有遇到任何不可恢复的损失突增，也没有进行任何回滚操作。  
+接下来，我们对\dsviii{}进行了两阶段的上下文长度扩展。在第一阶段，最大上下文长度扩展到32K，在第二阶段进一步扩展到128K。  
+随后，我们对\dsviii{}的基础模型进行了后训练，包括监督微调（Supervised Fine-Tuning, SFT）和强化学习（Reinforcement Learning, RL），以使其与人类偏好对齐并进一步释放其潜力。  
+在后训练阶段，我们从DeepSeek-R1系列模型中蒸馏了推理能力，同时精心平衡了模型准确性和生成长度之间的关系。
+
+我们在广泛的基准测试上对\dsviii{}进行了评估。  
+尽管训练成本经济，综合评估表明，\dsviii{}-Base已成为当前最强的开源基础模型，尤其是在代码和数学领域。  
+其聊天版本也在标准基准和开放式基准测试中优于其他开源模型，并与领先的闭源模型（包括GPT-4o和Claude-3.5-Sonnet）性能相当。
+
+\begin{table}[t]
+    \centering
+    \setlength{\tabcolsep}{6pt}
+    \begin{tabular}{l | c c c | c}
+        \toprule
+        \textbf{Training Costs} & \textbf{Pre-Training} & \textbf{Context Extension} & \textbf{Post-Training} & \textbf{Total} \\
+        \midrule
+        in H800 GPU Hours & 2664K & 119K & 5K & 2788K \\
+        in USD & \$5.328M & \$0.238M & \$0.01M & \$5.576M \\
+        \bottomrule
+    \end{tabular}
+    \caption{
+    \dsviii{} 的训练花费，假设 H800 每个 GPU 小时的租赁费用是 \$2。
+    }
+    \label{tab:cost}
+\end{table}
+
+最后，我们再次强调\dsviii{}的经济训练成本，总结在表~\ref{tab:cost}中，这是通过我们对算法、框架和硬件的优化协同设计实现的。  
+在预训练阶段，每万亿token的训练仅需18万H800 GPU小时，即在我们拥有2048个H800 GPU的集群上仅需3.7天。  
+因此，我们的预训练阶段在不到两个月内完成，并消耗了266.4万GPU小时。  
+结合上下文长度扩展所需的11.9万GPU小时和后训练的0.5万GPU小时，\dsviii{}的完整训练仅需278.8万GPU小时。  
+假设H800 GPU的租赁价格为每小时2美元，我们的总训练成本仅为557.6万美元。  
+需要注意的是，上述成本仅包括\dsviii{}的官方训练，不包括在架构、算法或数据上的前期研究和消融实验相关成本。
+
+我们主要的贡献包括：
+
+\noindent
+\textbf{架构：创新的负载均衡策略和训练目标}
+\begin{itemize}[topsep=0pt]
+    \item
+    在\dsvii{}的高效架构基础上，我们首创了一种无辅助损失的负载均衡策略，最大限度地减少了因鼓励负载均衡而导致的性能下降。
+    \item 
+    我们研究了多token预测（Multi-Token Prediction, MTP）目标，并证明其对模型性能有益。它还可以用于推测解码（speculative decoding）以实现推理加速。
+\end{itemize}
+
+\noindent
+\textbf{预训练：通往终极的训练效率}
+\begin{itemize}[topsep=0pt]
+    \item
+    我们设计了一个FP8混合精度训练框架，并首次在超大规模模型上验证了FP8训练的可行性和有效性。
+    \item 
+    通过算法、框架和硬件的协同设计，我们克服了跨节点MoE训练中的通信瓶颈，实现了近乎完全的计算-通信重叠。这显著提高了我们的训练效率并降低了训练成本，使我们能够在不增加额外开销的情况下进一步扩大模型规模。
+    \item 
+    仅以266.4万H800 GPU小时的经济成本，我们完成了DeepSeek-V3在14.8万亿token上的预训练，生成了当前最强的开源基础模型。预训练后的后续训练阶段仅需10万GPU小时。
+\end{itemize}
+
+\noindent
+\textbf{后训练：从DeepSeek-R1进行知识蒸馏}
+\begin{itemize}[topsep=0pt]
+    \item 
+    我们引入了一种创新方法，将长思维链（Chain-of-Thought, CoT）模型（特别是DeepSeek R1系列模型之一）的推理能力蒸馏到标准LLM（尤其是DeepSeek-V3）中。我们的管道巧妙地将R1的验证和反思模式融入DeepSeek-V3，显著提升了其推理性能。同时，我们还控制了DeepSeek-V3的输出风格和长度。
+\end{itemize}
+\noindent
+\textbf{核心评估结果总结}
+\begin{itemize}[topsep=0pt]
+    \item \textbf{知识}:
+    (1) 在教育类基准测试（如MMLU、MMLU-Pro和GPQA）上，DeepSeek-V3优于所有其他开源模型，在MMLU上得分为88.5，在MMLU-Pro上得分为75.9，在GPQA上得分为59.1。其性能与领先的闭源模型（如GPT-4o和Claude-Sonnet-3.5）相当，缩小了开源与闭源模型在该领域的差距。(2) 在事实性基准测试中，DeepSeek-V3在SimpleQA和中文SimpleQA上均表现出优于其他开源模型的性能。尽管在英文事实知识（SimpleQA）上略逊于GPT-4o和Claude-Sonnet-3.5，但在中文事实知识（中文SimpleQA）上超越了这些模型，凸显了其在中文事实知识方面的优势。
+    
+    \item \textbf{代码、数学和推理}: 
+    (1) DeepSeek-V3在所有非长链思维（CoT）的开源和闭源模型中，在数学相关基准测试上实现了最先进的性能。值得注意的是，它在特定基准测试（如MATH-500）上甚至优于o1-preview，展示了其强大的数学推理能力。(2) 在编码相关任务中，DeepSeek-V3成为编码竞赛基准测试（如LiveCodeBench）中表现最佳的模型，巩固了其在该领域的领先地位。在工程相关任务中，尽管DeepSeek-V3的表现略低于Claude-Sonnet-3.5，但它仍然显著领先于所有其他模型，展示了其在多样化技术基准测试中的竞争力。
+\end{itemize}
+
 \end{document}
