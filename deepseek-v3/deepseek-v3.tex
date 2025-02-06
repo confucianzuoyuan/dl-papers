@@ -149,4 +149,105 @@
     (1) DeepSeek-V3在所有非长链思维（CoT）的开源和闭源模型中，在数学相关基准测试上实现了最先进的性能。值得注意的是，它在特定基准测试（如MATH-500）上甚至优于o1-preview，展示了其强大的数学推理能力。(2) 在编码相关任务中，DeepSeek-V3成为编码竞赛基准测试（如LiveCodeBench）中表现最佳的模型，巩固了其在该领域的领先地位。在工程相关任务中，尽管DeepSeek-V3的表现略低于Claude-Sonnet-3.5，但它仍然显著领先于所有其他模型，展示了其在多样化技术基准测试中的竞争力。
 \end{itemize}
 
+在本文的剩余部分，我们首先详细阐述了\dsviii{}的模型架构（第\ref{sec:arch}节）。  
+随后，我们介绍了我们的基础设施，包括计算集群、训练框架、对FP8训练的支持、推理部署策略以及对未来硬件设计的建议。  
+接下来，我们描述了预训练过程，包括训练数据的构建、超参数设置、长上下文扩展技术、相关评估以及一些讨论（第\ref{sec:pre-training}节）。  
+之后，我们讨论了后训练的工作，包括监督微调（SFT）、强化学习（RL）、相应的评估和讨论（第\ref{sec:alignment}节）。  
+最后，我们总结了这项工作，讨论了\dsviii{}的现有局限性，并提出了未来研究的潜在方向（第\ref{sec:conclusion}节）。
+
+\section{架构}
+\label{sec:arch}
+
+\subsection{基本架构}
+
+\subsubsection{多头潜在注意力(Multi-Head Latent Attention)}
+
+\subsubsection{\dsmoe{} with Auxiliary-Loss-Free Load Balancing}
+
+\subsection{多Token预测(Multi-Token Prediction)}
+
+\section{基础设施}
+\label{sec:infra}
+
+\subsection{计算集群}
+
+\subsection{训练框架}
+
+\subsubsection{DualPipe and Computation-Communication Overlap}
+
+\subsubsection{Efficient Implementation of Cross-Node All-to-All Communication}
+
+\subsubsection{Extremely Memory Saving with Minimal Overhead}
+
+\subsection{FP8 精度训练}
+
+\subsection{推理和部署}
+\label{sec:inference_deployment}
+
+\subsubsection{Prefilling}
+
+\subsubsection{解码}
+
+\subsubsection{Communication Hardware}
+
+\subsubsection{Compute Hardware}
+
+\section{预训练}
+\label{sec:pre-training}
+
+\subsection{Data Construction}
+
+\subsection{超参数}
+
+\subsection{长上下文扩展}
+
+\subsection{评估}
+
+\subsubsection{评估结果}
+
+\subsection{讨论}
+
+\subsubsection{Ablation Studies for Multi-Token Prediction}
+\label{discussion:ablation_nextn}
+
+\subsubsection{Ablation Studies for the Auxiliary-Loss-Free Balancing Strategy}
+\label{discussion:ablation_noaux_tc}
+
+\subsubsection{Batch-Wise Load Balance VS. Sequence-Wise Load Balance}
+\label{discussion:balance}
+
+\section{后训练}
+\label{sec:alignment}
+
+\subsection{监督微调(Supervised Fine-Tuning)}
+
+\subsection{强化学习}
+
+\subsubsection{奖励模型}
+
+\subsubsection{组相对策略优化(Group Relative Policy Optimization)}
+
+\subsection{评估}
+
+\subsubsection{评估设置}
+
+\subsubsection{标准评估}
+
+\subsubsection{Open-Ended Evaluation}
+
+\subsubsection{\dsviii{} as a Generative Reward Model}
+
+\subsection{讨论}
+
+\subsubsection{从 DeepSeek-R1 蒸馏}
+
+\subsubsection{Self-Rewarding}
+
+\subsubsection{Multi-Token Prediction Evaluation} 
+
+\section{结论，局限性和未来的方向}
+\label{sec:conclusion}
+
+
+
 \end{document}
