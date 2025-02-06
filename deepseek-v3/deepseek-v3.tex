@@ -290,19 +290,129 @@
 
 \subsubsection{评估设置}
 
+\input{tables/chat_evaluation}
+
 \subsubsection{标准评估}
 
-\subsubsection{Open-Ended Evaluation}
+表~\ref{tab:chat} 展示了评估结果，表明 \dsviii{} 是表现最好的开源模型。此外，它在与前沿闭源模型如 GPT-4o 和 Claude-3.5-Sonnet 的竞争中也表现出色。
 
-\subsubsection{\dsviii{} as a Generative Reward Model}
+\paragraph{英文基准测试}
+MMLU 是一个广泛认可的基准，旨在评估大型语言模型在多种知识领域和任务中的表现。 \dsviii{} 展现出具有竞争力的性能，与顶尖模型如 LLaMA-3.1-405B、GPT-4o 和 Claude-Sonnet 3.5 不相上下，同时显著超越 Qwen2.5 72B。此外，\dsviii{} 在 MMLU-Pro 这一更具挑战性的教育知识基准测试中表现优异，接近 Claude-Sonnet 3.5。在 MMLU-Redux（一个修正标签的 MMLU 精简版）中，\dsviii{} 超越了其他同类模型。此外，在 GPQA-Diamond 这一博士级评估测试平台上，\dsviii{} 取得了卓越的成绩，仅次于 Claude 3.5 Sonnet，且显著超越了所有其他竞争对手。
+
+在长文本理解基准测试中，如 DROP、LongBench v2 和 FRAMES，\dsviii{} 继续展示其作为顶尖模型的地位。在 DROP 的 3-shot 设置中，它取得了令人印象深刻的 91.6 F1 分数，超越了该类别中的所有其他模型。在 FRAMES 这一需要在超过 10 万个标记上下文中进行问答的基准测试中，\dsviii{} 紧随 GPT-4o，其表现显著优于其他所有模型。这展示了 \dsviii{} 在处理极长文本任务方面的强大能力。
+
+\dsviii{} 的长文本处理能力在 LongBench v2 上得到了进一步验证，该数据集在 DeepSeek V3 发布前几周发布。在事实知识基准测试 SimpleQA 中，\dsviii{} 落后于 GPT-4o 和 Claude-Sonnet，这主要是由于其设计重点和资源分配。 \dsviii{} 将更多的训练标记分配给学习中文知识，从而在 C-SimpleQA 上表现出色。在遵循指令的基准测试中，\dsviii{} 显著超越了其前身 \dsvii{} 系列，突显了其在理解和遵循用户定义格式约束方面的改进能力。
+
+\paragraph{代码与数学基准测试}
+编码是大型语言模型（LLMs）面临的一项具有挑战性且实用的任务，涵盖了工程相关的任务，如 SWE-Bench-Verified 和 Aider，以及算法任务，如 HumanEval 和 LiveCodeBench。在工程任务中，\dsviii{} 落后于 Claude-Sonnet-3.5-1022，但显著优于开源模型。开源的 \dsviii{} 有望促进与编码相关的工程任务的进展。通过提供其强大的能力，\dsviii{} 可以推动软件工程和算法开发等领域的创新与改进，使开发者和研究人员能够拓展开源模型在编码任务中的边界。
+
+在算法任务中，\dsviii{} 展现出卓越的表现，超越了 HumanEval-Mul 和 LiveCodeBench 等基准测试中的所有基线。这一成功归因于其先进的知识蒸馏技术，有效提升了其在算法任务中的代码生成和问题解决能力。
+
+在数学基准测试中，\dsviii{} 展现出卓越的表现，显著超越了基线，并为非 o1-like 模型设定了新的最先进水平。具体而言，在 AIME、MATH-500 和 CNMO 2024 上，\dsviii{} 的绝对得分比第二名模型 Qwen2.5 72B 高出约 10\%，这一差距在如此具有挑战性的基准测试中是相当显著的。这一卓越能力突显了 DeepSeek-R1 中蒸馏技术的有效性，该技术已被证明对非 o1-like 模型极为有益。
+
+\paragraph{中文基准测试}
+Qwen 和 DeepSeek 是两个在中文和英文方面具有强大支持的代表性模型系列。在事实基准测试中文 SimpleQA 中，\dsviii{} 超越了 Qwen2.5-72B 16.4 分，尽管 Qwen2.5 是在一个更大的语料库上训练的，包含 18T 标记，比 \dsviii{} 预训练的 14.8T 标记多出 20%。
+
+在 C-Eval（一个代表性的中文教育知识评估基准）和 CLUEWSC（中文 Winograd 语料库挑战）中，\dsviii{} 和 Qwen2.5-72B 表现出相似的性能水平，表明这两个模型在应对具有挑战性的中文推理和教育任务方面都经过了良好的优化。
+
+\begin{table}[t]
+    \centering
+    \begin{tabular}{c | c c}
+    \toprule
+    \textbf{Model} & \textbf{Arena-Hard} & \textbf{AlpacaEval 2.0} \\
+    \midrule
+    DeepSeek-V2.5-0905 & 76.2 & 50.5\\
+    Qwen2.5-72B-Instruct & 81.2 & 49.1  \\
+    LLaMA-3.1 405B & 69.3 & 40.5\\
+    GPT-4o-0513 & 80.4 &  51.1 \\
+    Claude-Sonnet-3.5-1022 & 85.2  & 52.0 \\
+    DeepSeek-V3 & \textbf{85.5} & \textbf{70.0} \\
+    \bottomrule
+    \end{tabular}
+    \caption{
+    English open-ended conversation evaluations. 
+    For AlpacaEval 2.0, we use the length-controlled win rate as the metric. 
+    }
+    \label{tab:open} 
+\end{table}
+
+\subsubsection{开放式评估}
+
+除了标准基准测试，我们还使用大型语言模型（LLMs）作为评判者，对开放式生成任务进行了评估，结果如表~\ref{tab:open} 所示。具体而言，我们遵循了 AlpacaEval 2.0 和 Arena-Hard 的原始配置，利用 GPT-4-Turbo-1106 进行成对比较的评判。
+
+在 Arena-Hard 上，\dsviii{} 以超过 86\% 的胜率击败基线模型 GPT-4-0314，其表现与顶尖模型如 Claude-Sonnet-3.5-1022 不相上下。这突显了 \dsviii{} 的强大能力，尤其是在处理复杂提示时，包括编码和调试任务。此外，\dsviii{} 成为第一个在 Arena-Hard 基准测试中超过 85\% 的开源模型，这一成就显著缩小了开源模型与闭源模型之间的性能差距，为开源模型在挑战性领域的成就设定了新标准。
+
+同样，\dsviii{} 在 AlpacaEval 2.0 上表现出色，超越了闭源和开源模型。这证明了它在写作任务和处理简单问答场景方面的卓越能力。值得注意的是，它以 20\% 的显著优势超过了 DeepSeek-V2.5-0905，突显了在处理简单任务方面的重大改进，并展示了其进步的有效性。
+
+\subsubsection{\dsviii{} 作为通用的奖励模型}
+
+我们将 \dsviii{} 的判断能力与最先进的模型进行比较，即 GPT-4o 和 Claude-3.5。表~\ref{tab:rewardbench} 展示了这些模型在 RewardBench 中的表现。 
+
+\dsviii{} 的表现与最佳版本的 GPT-4o-0806 和 Claude-3.5-Sonnet-1022 相当，同时超越了其他版本。此外，\dsviii{} 的判断能力还可以通过投票技术得到增强。因此，我们使用 \dsviii{} 结合投票技术，对开放式问题提供自我反馈，从而提高对齐过程的有效性和鲁棒性。
+
+\begin{table}[t]
+    \centering
+    \begin{tabular}{c | c c c c c}
+    \toprule
+    \textbf{Model} & \textbf{Chat} & \textbf{Chat-Hard} & \textbf{Safety} & \textbf{Reasoning} & \textbf{Average} \\
+    \midrule
+    GPT-4o-0513 & 96.6 & 70.4 & 86.7 & 84.9 & 84.7\\
+    GPT-4o-0806 & 96.1 & 76.1 & 88.1 & 86.6 & 86.7\\
+    GPT-4o-1120 & 95.8 & 71.3 & 86.2 & 85.2 & 84.6\\
+    \midrule 
+    Claude-3.5-sonnet-0620 & 96.4 & 74.0 & 81.6 & 84.7 & 84.2\\
+    Claude-3.5-sonnet-1022 & 96.4 & 79.7 & 91.1 & 87.6 & 88.7\\
+    \midrule 
+    \dsviii{} & 96.9 & 79.8 & 87.0 & 84.3 & 87.0\\
+    \dsviii{} (maj@6) & 96.9 & 82.6 & 89.5 & 89.2 & 89.6\\
+    \bottomrule
+    \end{tabular}
+    \caption{Performances of GPT-4o, Claude-3.5-sonnet and \dsviii{} on RewardBench.}
+    \label{tab:rewardbench} 
+\end{table}
 
 \subsection{讨论}
 
 \subsubsection{从 DeepSeek-R1 蒸馏}
 
+我们基于 DeepSeek-V2.5 对来自 DeepSeek-R1 的蒸馏贡献进行了消融实验。基线模型是在短链条思维（CoT）数据上训练的，而其竞争模型则使用了上述专家检查点生成的数据。
+
+表~\ref{tab:distill} 显示了蒸馏数据的有效性，在 LiveCodeBench 和 MATH-500 基准测试中均显著提高了性能。我们的实验揭示了一个有趣的权衡：蒸馏导致了更好的性能，但也显著增加了平均响应长度。为了在模型准确性和计算效率之间保持平衡，我们为 \dsviii{} 在蒸馏中仔细选择了最佳设置。
+
+我们的研究表明，从推理模型中进行知识蒸馏是后训练优化的一个有前景的方向。虽然我们目前的工作集中在数学和编码领域的数据蒸馏上，但这种方法在各种任务领域中显示出更广泛应用的潜力。在这些特定领域中展示的有效性表明，长链条思维蒸馏可能对增强其他需要复杂推理的认知任务中的模型性能具有重要价值。进一步探索这种方法在不同领域的应用仍然是未来研究的重要方向。
+
+\begin{table}[t]
+    \centering
+    \begin{tabular}{c|cc|cc}
+    \toprule
+    \multirow{2}{*}{\textbf{Model}} & \multicolumn{2}{c}{\textbf{LiveCodeBench-CoT}} & \multicolumn{2}{c}{\textbf{MATH-500}} \\
+
+     & Pass@1 & Length & Pass@1 & Length\\
+    \midrule
+     DeepSeek-V2.5 Baseline & 31.1 & 718 & 74.6 & 769\\
+     DeepSeek-V2.5 +R1 Distill & 37.4 & 783 &83.2& 1510\\
+    \bottomrule
+    \end{tabular}
+    \caption{
+    The contribution of distillation from DeepSeek-R1. 
+    The evaluation settings of LiveCodeBench and MATH-500 are the same as in Table~\ref{tab:chat}.
+    }
+    \label{tab:distill} 
+\end{table}
+
 \subsubsection{Self-Rewarding}
 
-\subsubsection{Multi-Token Prediction Evaluation} 
+奖励在强化学习（RL）中发挥着关键作用，引导优化过程。在一些通过外部工具验证相对简单的领域，例如某些编码或数学场景，强化学习表现出卓越的效果。然而，在更一般的场景中，通过硬编码构建反馈机制是不可行的。
+
+在 \dsviii{} 的开发过程中，对于这些更广泛的背景，我们采用了宪法 AI 方法，利用 \dsviii{} 自身的投票评估结果作为反馈来源。这种方法产生了显著的对齐效果，显著提升了 \dsviii{} 在主观评估中的表现。通过整合额外的宪法输入，\dsviii{} 可以朝着宪法方向进行优化。
+
+我们相信，这种将补充信息与大型语言模型（LLM）结合作为反馈来源的范式至关重要。LLM 作为一个多功能处理器，能够将来自不同场景的非结构化信息转化为奖励，最终促进 LLM 的自我改进。除了自我奖励外，我们还致力于发现其他通用且可扩展的奖励方法，以持续提升模型在一般场景中的能力。
+
+\subsubsection{Multi-Token Prediction Evaluation}
+
+\dsviii{} 不仅仅预测下一个单个令牌，而是通过 MTP 技术预测下两个令牌。结合推测解码的框架，可以显著加快模型的解码速度。
+
+一个自然的问题是关于额外预测令牌的接受率。根据我们的评估，第二个令牌预测的接受率在不同生成主题中范围在 85\% 到 90\% 之间，显示出一致的可靠性。这个高接受率使得 \dsviii{} 能够实现显著提高的解码速度，达到 1.8 倍的 TPS（每秒令牌数）。
 
 \section{结论，局限性和未来的方向}
 \label{sec:conclusion}
