@@ -31,7 +31,7 @@
 \maketitle
 
 \begin{abstract}
-    我们推出了\dsviii{}，这是一个强大的混合专家（Mixture-of-Experts, MoE）语言模型，总参数量为6710亿，每个 token 激活的参数量为370亿。为了实现高效的推理和低成本的训练，\dsviii{}采用了多头潜在注意力（Multi-head Latent Attention, MLA）和\dsmoe{}架构，这两种架构在\dsvii{}中得到了充分验证。此外，\dsviii{}首创了一种无辅助损失（auxiliary-loss-free）的负载均衡策略，并将多Token预测设定为训练目标，以实现更强的性能。我们在14.8万亿个多样且高质量的Token上进行预训练，得到了\dsviii{}模型，随后通过监督微调（Supervised Fine-Tuning）和强化学习（Reinforcement Learning）充分挖掘\dsviii{}的潜力。综合评估表明，\dsviii{}的表现优于其它开源模型，并与领先的闭源模型性能相当。尽管性能卓越，\dsviii{}的完整训练仅需278.8万H800 GPU小时。此外，\dsviii{}的训练过程非常稳定。在整个训练过程中，我们没有遇到任何不可恢复的损失突增问题或执行任何回滚操作。模型检查点可在\url{https://github.com/deepseek-ai/DeepSeek-V3}获取。
+    我们推出了\dsviii{}，这是一个强大的混合专家（Mixture-of-Experts, MoE）语言模型，总参数量为6710亿，每个 Token 激活的参数量为370亿。为了实现高效的推理和低成本的训练，\dsviii{}采用了多头潜在注意力（Multi-head Latent Attention, MLA）和\dsmoe{}架构，这两种架构在\dsvii{}中得到了充分验证。此外，\dsviii{}首创了一种无辅助损失（auxiliary-loss-free）的负载均衡策略，并将多Token预测设定为训练目标，以实现更强的性能。我们在14.8万亿个多样且高质量的Token上进行预训练，得到了\dsviii{}模型，随后通过监督微调（Supervised Fine-Tuning）和强化学习（Reinforcement Learning）充分挖掘\dsviii{}的潜力。综合评估表明，\dsviii{}的表现优于其它开源模型，并与领先的闭源模型性能相当。尽管性能卓越，\dsviii{}的完整训练仅需278.8万H800 GPU小时。此外，\dsviii{}的训练过程非常稳定。在整个训练过程中，我们没有遇到任何不可恢复的损失突增问题，也没有执行任何回滚操作。模型检查点可在\url{https://github.com/deepseek-ai/DeepSeek-V3}获取。
 \end{abstract}
 
 \begin{figure}[h]
