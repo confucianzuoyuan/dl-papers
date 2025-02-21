@@ -33,7 +33,7 @@
 
 循环神经网络（RNN），特别是长短期记忆网络（LSTM）和门控循环神经网络（GRU），已被牢固确立为序列建模和转换问题（如语言建模和机器翻译）中的最先进方法。此后，众多研究不断推动循环语言模型和编码器-解码器架构的边界。
 
-循环模型通常沿着输入和输出序列的符号位置进行因式分解计算。将位置与计算时间的步骤对齐，它们会生成一系列隐藏状态 $h_t$，作为前一个隐藏状态 $h_{t-1}$ 和位置 $t$ 的输入的函数。这种固有的顺序性质阻碍了训练示例内的并行化，这在序列长度较长时变得尤为关键，因为内存限制会限制跨示例的批处理。最近的研究通过因式分解技巧和条件计算在计算效率方面取得了显著改进，同时在后一种情况下也提高了模型性能。然而，顺序计算的基本约束仍然存在。
+循环模型通常沿着输入和输出序列的符号位置进行因式分解计算。将位置与计算时间的步骤对齐，它们会生成一系列隐藏状态 $h_t$（作为前一个隐藏状态 $h_{t-1}$ 和位置 $t$ 的输入的函数）。这种固有的顺序性质阻碍了训练示例内的并行化，这在序列长度较长时变得尤为关键，因为内存限制会限制跨示例的批处理。最近的研究通过因式分解技巧和条件计算在计算效率方面取得了显著改进，同时在后一种情况下也提高了模型性能。然而，顺序计算的基本约束仍然存在。
 
 注意力机制已经成为各种任务中引人注目的序列建模和转换模型的一个组成部分，它允许对依赖关系进行建模，而无需考虑它们在输入或输出序列中的距离。然而，在几乎所有情况下，这种注意力机制都是与循环网络结合使用的。
 
@@ -41,20 +41,20 @@
 
 \section{背景}
 
-减少顺序计算的目标也构成了扩展神经GPU（Extended Neural GPU）、ByteNet和ConvS2S的基础，所有这些模型都使用卷积神经网络作为基本构建块，并行计算所有输入和输出位置的隐藏表示。在这些模型中，关联两个任意输入或输出位置的信号所需的操作数量随着位置之间的距离而增加，对于ConvS2S是线性增长，对于ByteNet是对数增长。这使得学习远距离位置之间的依赖关系变得更加困难。在Transformer中，这一操作数量被减少到一个常数，尽管由于对注意力加权位置进行平均而导致有效分辨率降低，我们通过多头注意力机制（如第\ref{sec:attention}节所述）来抵消这一影响。
+减少顺序计算的目标也构成了扩展神经GPU（Extended Neural GPU）、ByteNet和ConvS2S的基础，所有这些模型都使用卷积神经网络作为基本构建块，并行计算所有输入和输出位置的隐藏表示。在这些模型中，关联两个任意输入或输出位置的信号所需的运算数量随着位置之间的距离而增加，对于ConvS2S是线性增长，对于ByteNet是对数增长。这使得学习远距离位置之间的依赖关系变得更加困难。在Transformer中，这一运算数量被减少到了常数级别。虽然对注意力加权位置进行平均而导致了有效分辨率降低，但我们通过多头注意力机制（如第\ref{sec:attention}节所述）抵消了这一影响。
 
-自注意力机制，有时也称为内部注意力机制，是一种将单个序列的不同位置关联起来以计算序列表示的注意力机制。自注意力机制已成功应用于各种任务，包括阅读理解、抽象摘要、文本蕴含和学习任务无关的句子表示。
+自注意力机制，有时也称为内部注意力机制，是一种将单个序列的不同位置关联起来以计算序列表示的注意力机制。自注意力机制已成功应用于各种任务，包括阅读理解、文本摘要、文本蕴含和学习任务无关的句子表示。
 
 端到端记忆网络基于循环注意力机制，而不是序列对齐的循环结构，并且已被证明在简单语言问答和语言建模任务中表现良好。
 
-然而，据我们所知，Transformer是第一个完全依赖自注意力机制来计算其输入和输出表示的转换模型，而没有使用序列对齐的RNN或卷积。在接下来的章节中，我们将描述Transformer，解释自注意力机制，并讨论其相对于《Neural GPUs learn algorithms》、《Neural machine translation in linear time》和《Convolutional sequence to sequence learning》等模型的优势。
+然而，据我们所知，Transformer是第一个没有使用序列对齐的RNN或卷积，而完全依赖自注意力机制来计算其输入和输出表示的转换模型。在接下来的章节中，我们将描述Transformer，解释自注意力机制，并讨论其相对于《Neural GPUs learn algorithms》、《Neural machine translation in linear time》和《Convolutional sequence to sequence learning》等模型的优势。
 
 \section{模型架构}
 
 \begin{figure}
   \centering
   \includegraphics[scale=0.6]{Figures/ModalNet-21}
-  \caption{The Transformer - model architecture.}
+  \caption{Transformer模型架构。}
   \label{fig:model-arch}
 \end{figure}
 
@@ -66,7 +66,7 @@ Transformer遵循这种整体架构，在编码器和解码器中均使用堆叠
 
 \paragraph{编码器：}编码器由$N=6$个相同的层堆叠而成。每一层包含两个子层。第一个子层是多头自注意力机制，第二个子层是一个简单的逐点全连接前馈网络。我们在每个子层周围采用了残差连接，随后进行层归一化。也就是说，每个子层的输出为$\mathrm{LayerNorm}(x + \mathrm{Sublayer}(x))$，其中$\mathrm{Sublayer}(x)$是该子层自身实现的函数。为了便于这些残差连接，模型中的所有子层以及嵌入层的输出维度均为$\dmodel=512$。
 
-\paragraph{解码器：}解码器同样由$N=6$个相同的层堆叠而成。除了每个编码器层中的两个子层外，解码器还插入了一个第三子层，该子层对堆叠的编码器的输出执行多头注意力机制。与编码器类似，我们在每个子层周围采用了残差连接，随后进行层归一化。我们还修改了解码器堆栈中的自注意力子层，以防止位置关注到后续位置。这种掩码机制，结合输出嵌入偏移一个位置的事实，确保了对位置$i$的预测只能依赖于位置小于$i$的已知输出。
+\paragraph{解码器：}解码器同样由$N=6$个相同的层堆叠而成。除了每个编码器层中的两个子层外，解码器还插入了第三个子层，该子层对堆叠的编码器的输出执行多头注意力机制。与编码器类似，我们在每个子层周围采用了残差连接，随后进行层归一化。我们还修改了堆叠的解码器中的自注意力子层，以防止位置关注到后续位置。这种掩码机制，结合输出嵌入偏移一个位置的事实，确保了对位置$i$的预测只能依赖于位置小于$i$的已知输出。
 
 \subsection{注意力机制} \label{sec:attention}
 
@@ -74,9 +74,9 @@ Transformer遵循这种整体架构，在编码器和解码器中均使用堆叠
 
 \subsubsection{缩放点积注意力（Scaled Dot-Product Attention）} \label{sec:scaled-dot-prod}
 
-我们将我们的特定注意力机制称为“缩放点积注意力”（图~\ref{fig:multi-head-att}）。输入包括维度为$d_k$的查询和键，以及维度为$d_v$的值。我们计算查询与所有键的点积，将每个点积除以$\sqrt{d_k}$，然后应用softmax函数以获得值的权重。
+我们将这个特定的注意力机制称为“缩放点积注意力”（图~\ref{fig:multi-head-att}）。输入包括维度为$d_k$的查询和键，以及维度为$d_v$的值。我们计算查询与所有键的点积，将每个点积除以$\sqrt{d_k}$，然后应用softmax函数以获得值的权重。
 
-在实际操作中，我们同时计算一组查询的注意力函数，这些查询被打包成一个矩阵$Q$。键和值也被打包成矩阵$K$和$V$。我们计算输出矩阵如下：
+在实际运算中，我们同时计算一组查询的注意力函数，这些查询被打包成一个矩阵$Q$。键和值也被打包成矩阵$K$和$V$。我们计算输出矩阵如下：
 
 \begin{equation}
   \mathrm{Attention}(Q, K, V) = \mathrm{softmax}(\frac{QK^T}{\sqrt{d_k}})V
@@ -91,13 +91,13 @@ Transformer遵循这种整体架构，在编码器和解码器中均使用堆叠
 \begin{figure}
 \begin{minipage}[t]{0.5\textwidth}
   \centering
-  Scaled Dot-Product Attention \\
+  缩放点乘注意力机制 \\
   \vspace{0.5cm}
   \includegraphics[scale=0.6]{Figures/ModalNet-19}
 \end{minipage}
 \begin{minipage}[t]{0.5\textwidth}
   \centering 
-  Multi-Head Attention \\
+  多头注意力机制 \\
   \vspace{0.1cm}
   \includegraphics[scale=0.6]{Figures/ModalNet-20}  
 \end{minipage}
@@ -105,11 +105,11 @@ Transformer遵循这种整体架构，在编码器和解码器中均使用堆叠
 
   % \centering
 
-  \caption{(left) Scaled Dot-Product Attention. (right) Multi-Head Attention consists of several attention layers running in parallel.}
+  \caption{(左) 缩放点乘注意力机制。(右) 包含多个并行的注意力层的多头注意力机制。}
   \label{fig:multi-head-att}
 \end{figure}
 
-我们发现，与其使用$\dmodel$维的键、值和查询执行单一的注意力函数，不如将查询、键和值分别通过不同的、可学习的线性投影线性投影$h$次到$d_k$、$d_k$和$d_v$维度更为有益。在这些投影后的查询、键和值版本上，我们并行地执行注意力函数，得到$d_v$维的输出值。这些输出值被连接起来并再次投影，最终得到结果值，如图~\ref{fig:multi-head-att}所示。
+我们发现，与其使用$\dmodel$维的键、值和查询执行单一的注意力函数，不如将查询、键和值（分别通过不同的、可学习的线性投影）线性投影$h$次到$d_k$、$d_k$和$d_v$维度更为有益。在这些投影后的查询、键和值版本上，我们并行地执行注意力函数，得到$d_v$维的输出值。这些输出值被连接起来并再次投影，最终得到结果值，如图~\ref{fig:multi-head-att}所示。
 
 多头注意力机制允许模型同时关注来自不同位置的不同表示子空间的信息。在单一注意力头的情况下，平均化会抑制这种能力。
 
@@ -127,11 +127,11 @@ Transformer遵循这种整体架构，在编码器和解码器中均使用堆叠
 Transformer 在三种不同的场景中使用多头注意力机制：
 
 \begin{itemize}
- \item 在“编码器-解码器注意力”层中，查询来自解码器的前一层的输出，而记忆键和值则来自编码器的输出。这使得解码器中的每个位置都可以关注输入序列中的所有位置。这模仿了序列到序列模型中典型的编码器-解码器注意力机制，例如。
+ \item 在“编码器-解码器注意力”层中，查询来自解码器的前一层的输出，而记忆键和值则来自编码器的输出。这使得解码器中的每个位置都可以关注输入序列中的所有位置。这模仿了序列到序列模型中典型的编码器-解码器注意力机制。
 
  \item 编码器包含自注意力层。在自注意力层中，所有的键、值和查询都来自同一个地方，即编码器前一层的输出。编码器中的每个位置可以关注编码器前一层的所有位置。
 
- \item 类似地，解码器中的自注意力层允许解码器中的每个位置关注解码器中包括该位置在内的所有位置。为了防止解码器中的信息向左流动以保持自回归特性，我们在缩放点积注意力中通过屏蔽（设置为$-\infty$）softmax输入中所有对应非法连接的值来实现这一点。参见图~\ref{fig:multi-head-att}。
+ \item 类似地，解码器中的自注意力层允许解码器中的每个位置关注解码器中包括该位置在内的所有位置。为了保持自回归特性，需要防止解码器中的信息向左流动，所以我们在缩放点积注意力中通过屏蔽（设置为$-\infty$）softmax输入中所有对应非法连接的值来实现这一点。参见图~\ref{fig:multi-head-att}。
 
 \end{itemize}
 
@@ -145,13 +145,13 @@ Transformer 在三种不同的场景中使用多头注意力机制：
 
 尽管线性变换在不同位置上是相同的，但它们在每一层中使用不同的参数。另一种描述方式是将其视为两个核大小为1的卷积。输入和输出的维度为$\dmodel=512$，而内层的维度为$d_{ff}=2048$。
 
-\subsection{Embeddings and Softmax}
+\subsection{嵌入和Softmax}
 
-与其他序列转导模型类似，我们使用可学习的嵌入将输入标记和输出标记转换为维度为$\dmodel$的向量。我们还使用常见的可学习线性变换和softmax函数将解码器输出转换为预测的下一个标记的概率。在我们的模型中，我们在两个嵌入层和softmax前的线性变换之间共享相同的权重矩阵，类似于。在嵌入层中，我们将这些权重乘以$\sqrt{\dmodel}$。
+与其它序列转换模型类似，我们使用可学习的嵌入将输入tokens和输出tokens转换为维度为$\dmodel$的向量。我们还使用常见的可学习线性变换和softmax函数将解码器输出转换为预测的下一个token的概率。在我们的模型中，我们在两个嵌入层和softmax前的线性变换之间共享相同的权重矩阵，类似于。在嵌入层中，我们将这些权重乘以$\sqrt{\dmodel}$。
 
-\subsection{Positional Encoding}
+\subsection{位置编码（Positional Encoding）}
 
-由于我们的模型不包含循环和卷积结构，为了让模型能够利用序列的顺序信息，我们必须注入一些关于序列中标记的相对或绝对位置的信息。为此，我们在编码器和解码器堆栈的底部向输入嵌入中添加了“位置编码”。位置编码的维度$\dmodel$与嵌入的维度相同，因此两者可以相加。位置编码有多种选择，包括可学习的和固定的。
+由于我们的模型不包含循环和卷积结构，为了让模型能够利用序列的顺序信息，我们必须注入一些关于序列中token的相对或绝对位置的信息。为此，我们在堆叠的编码器和解码器的底部向输入嵌入中添加了“位置编码”。位置编码的维度$\dmodel$与嵌入的维度相同，因此两者可以相加。位置编码有多种选择，包括可学习的位置编码和固定的位置编码。
 
 在这项工作中，我们使用了不同频率的正弦和余弦函数：
 
@@ -164,25 +164,25 @@ Transformer 在三种不同的场景中使用多头注意力机制：
 
 我们还尝试了使用可学习的位置嵌入，发现这两种方法产生的结果几乎相同（见表~\ref{tab:variations} 行 (E)）。我们选择了正弦版本，因为它可能使模型能够外推到比训练期间遇到的更长的序列长度。
 
-\section{为什么是自注意力机制？}
+\section{为什么使用自注意力机制？}
 
-在本节中，我们将自注意力层的各个方面与常用于将一个变长符号表示序列$(x_1, ..., x_n)$映射到另一个等长序列$(z_1, ..., z_n)$的循环层和卷积层进行比较，其中$x_i, z_i \in \mathbb{R}^d$，例如典型序列转导编码器或解码器中的隐藏层。为了说明我们使用自注意力的动机，我们考虑了三个需求。
+在本节中，我们将自注意力层的各个方面与常用于将一个变长符号表示序列$(x_1, ..., x_n)$映射到另一个等长序列$(z_1, ..., z_n)$的循环层和卷积层进行比较，其中$x_i, z_i \in \mathbb{R}^d$，例如典型序列转换编码器或解码器中的隐藏层。为了说明我们使用自注意力机制的动机，我们考虑了三个需求。
 
-其一是每层的总计算复杂度。其二是可以并行化的计算量，以所需的最小顺序操作数来衡量。
+其一是每层的总计算复杂度。其二是可以并行化的计算量，以所需的最小顺序运算数来衡量。
 
-其三是网络中长距离依赖之间的路径长度。学习长距离依赖是许多序列转导任务中的一个关键挑战。影响学习这种依赖能力的一个关键因素是前向和反向信号在网络中必须遍历的路径长度。输入和输出序列中任意位置组合之间的路径越短，学习长距离依赖就越容易。因此，我们还比较了由不同类型层组成的网络中任意两个输入和输出位置之间的最大路径长度。
+其三是网络中长距离依赖之间的路径长度。学习长距离依赖是许多序列转换任务中的一个关键挑战。影响学习这种依赖能力的一个关键因素是前向和反向信号在网络中必须遍历的路径长度。输入和输出序列中任意位置组合之间的路径越短，学习长距离依赖就越容易。因此，我们还比较了由不同类型层组成的网络中任意两个输入和输出位置之间的最大路径长度。
 
 \begin{table}[t]
 \caption{
-  Maximum path lengths, per-layer complexity and minimum number of sequential operations for different layer types. $n$ is the sequence length, $d$ is the representation dimension, $k$ is the kernel size of convolutions and $r$ the size of the neighborhood in restricted self-attention.}
+  不同层类型的最大路径长度，每层的复杂度和顺序运算的最小数量。 $n$ 是序列长度，$d$ 是表示的维度，$k$ 是卷积的核大小，$r$ 是受限的自注意力机制的邻域的大小。}
 \label{tab:op_complexities}
 \begin{center}
 \vspace{-1mm}
 
 \begin{tabular}{lccc}
 \toprule
-Layer Type & Complexity per Layer & Sequential & Maximum Path Length  \\
-           &             & Operations &   \\
+层的类型   & 每层的复杂度 & 顺序 & 最大路径长度  \\
+           &             & 运算 &   \\
 \hline
 \rule{0pt}{2.0ex}Self-Attention & $O(n^2 \cdot d)$ & $O(1)$ & $O(1)$ \\
 Recurrent & $O(n \cdot d^2)$ & $O(n)$ & $O(n)$ \\
@@ -195,7 +195,7 @@ Self-Attention (restricted)& $O(r \cdot n \cdot d)$ & $O(1)$ & $O(n/r)$ \\
 \end{center}
 \end{table}
 
-正如表\ref{tab:op_complexities}中所指出的，自注意力层通过恒定数量的顺序执行操作连接所有位置，而循环层则需要$O(n)$个顺序操作。在计算复杂度方面，当序列长度$n$小于表示维度$d$时，自注意力层比循环层更快，而这种情况在机器翻译中最先进的模型所使用的句子表示中最为常见，例如词片和字节对表示。为了提高涉及非常长序列的任务的计算性能，自注意力可以限制为仅考虑输入序列中围绕相应输出位置的大小为$r$的邻域。这将使最大路径长度增加到$O(n/r)$。我们计划在未来的工作中进一步研究这种方法。
+正如表\ref{tab:op_complexities}中所指出的，自注意力层通过恒定数量的顺序执行的运算连接所有位置，而循环层则需要$O(n)$个顺序运算。在计算复杂度方面，当序列长度$n$小于表示维度$d$时，自注意力层比循环层更快，而这种情况在机器翻译中最先进的模型所使用的句子表示中最为常见，例如词片和字节对表示。为了提高涉及非常长序列的任务的计算性能，自注意力可以限制为仅考虑输入序列中围绕相应输出位置的大小为$r$的邻域。这将使最大路径长度增加到$O(n/r)$。我们计划在未来的工作中进一步研究这种方法。
 
 核宽度为$k < n$的单个卷积层并不能连接所有输入和输出位置。在连续核的情况下，这样做需要堆叠$O(n/k)$个卷积层，而在膨胀卷积的情况下需要$O(log_k(n))$层，这会增加网络中任意两个位置之间最长路径的长度。卷积层通常比循环层更昂贵，大约是$k$倍。然而，可分离卷积显著降低了复杂度，降至$O(k \cdot n \cdot d + n \cdot d^2)$。即使$k=n$，可分离卷积的复杂度也等于自注意力层和逐点前馈层的组合，这正是我们在模型中采用的方法。
 
@@ -207,7 +207,7 @@ Self-Attention (restricted)& $O(r \cdot n \cdot d)$ & $O(1)$ & $O(n/r)$ \\
 
 \subsection{训练数据和批处理}
 
-我们在标准的WMT 2014英语-德语数据集上进行了训练，该数据集包含约450万句对。句子使用字节对编码进行编码，共享的源-目标词汇表包含约37000个标记。对于英语-法语，我们使用了更大的WMT 2014英语-法语数据集，包含3600万句对，并将标记分割为32000个词片词汇表。句对按近似序列长度进行批处理。每个训练批次包含一组句对，大约包含25000个源标记和25000个目标标记。
+我们在标准的WMT 2014英语-德语数据集上进行了训练，该数据集包含约450万句对。句子使用字节对编码进行编码，共享的源-目标词汇表包含约37000个tokens。对于英语-法语，我们使用了更大的WMT 2014英语-法语数据集，包含3600万句对，并将tokens分割为32000个词片词汇表。句对按近似序列长度进行批处理。每个训练批次包含一组句对，大约包含25000个源tokens和25000个目标tokens。
 
 \subsection{硬件和调度}
 
@@ -228,9 +228,9 @@ lrate = \dmodel^{-0.5} \cdot
 \subsection{正则化（Regularization）} \label{sec:reg}
 
 我们在训练过程中采用了三种正则化方法：
-\paragraph{残差丢弃} 我们在每个子层的输出上应用丢弃操作，然后将其添加到子层输入并进行归一化。此外，我们还在编码器和解码器堆栈中对嵌入和位置编码的总和应用丢弃操作。对于基础模型，我们使用的丢弃率为$P_{drop}=0.1$。
+\paragraph{残差丢弃} 我们在每个子层的输出上应用丢弃操作，然后将其添加到子层输入并进行归一化。此外，我们还在堆叠的编码器和解码器中对嵌入和位置编码的总和应用丢弃操作。对于基础模型，我们使用的丢弃率为$P_{drop}=0.1$。
 
-\paragraph{标签平滑} 在训练过程中，我们采用了值为$\epsilon_{ls}=0.1$的标签平滑。这虽然会损害困惑度，因为模型学会了更加不确定，但提高了准确率和BLEU分数。
+\paragraph{标签平滑} 在训练过程中，我们采用了值为$\epsilon_{ls}=0.1$的标签平滑。这虽然会损害困惑度（perplexity），因为模型输出的不确定性增加了，但提高了准确率和BLEU分数。
 
 \section{结果} \label{sec:results}
 
@@ -238,7 +238,7 @@ lrate = \dmodel^{-0.5} \cdot
 
 \begin{table}[t]
 \begin{center}
-\caption{The Transformer achieves better BLEU scores than previous state-of-the-art models on the English-to-German and English-to-French newstest2014 tests at a fraction of the training cost.  }
+\caption{Transformer在英语到德语和英语到法语的newstest2014测试中，以更低的训练成本取得了比之前最先进模型更好的BLEU分数。}
 \label{tab:wmt-results}
 \vspace{-2mm}
 %\scalebox{1.0}{
@@ -274,14 +274,14 @@ Transformer (big) & \textbf{28.4} & \textbf{41.8} & & \multicolumn{2}{c}{$2.3\cd
 
 在WMT 2014英语到法语翻译任务中，我们的大型模型取得了$41.0$的BLEU分数，优于所有之前发布的单一模型，而训练成本不到之前最先进模型的$1/4$。用于英语到法语翻译的Transformer (big)模型使用了丢弃率$P_{drop}=0.1$，而不是$0.3$。
 
-对于基础模型，我们使用了通过对最后5个检查点进行平均得到的单一模型，这些检查点每10分钟写入一次。对于大型模型，我们平均了最后20个检查点。我们使用了束搜索，束大小为$4$，长度惩罚$\alpha=0.6$。这些超参数是在开发集上实验后选择的。我们将推理期间的最大输出长度设置为输入长度加$50$，但尽可能提前终止。
+对于基础模型，我们使用了通过对最后5个检查点进行平均得到的单一模型，这些检查点每10分钟写入一次。对于大型模型，我们平均了最后20个检查点。我们使用了束搜索（beam search），束大小为$4$，长度惩罚$\alpha=0.6$。这些超参数是在开发集上实验后选择的。我们将推理期间的最大输出长度设置为输入长度加$50$，但尽可能提前终止。
 
 表\ref{tab:wmt-results}总结了我们的结果，并将我们的翻译质量和训练成本与文献中的其他模型架构进行了比较。我们通过将训练时间、使用的GPU数量和每个GPU的持续单精度浮点运算能力的估计值相乘来估计训练模型所使用的浮点运算次数\footnote{我们分别使用了2.8、3.7、6.0和9.5 TFLOPS作为K80、K40、M40和P100的值。}。
 
 \subsection{模型的变种}
 
 \begin{table}[t]
-\caption{Variations on the Transformer architecture. Unlisted values are identical to those of the base model.  All metrics are on the English-to-German translation development set, newstest2013.  Listed perplexities are per-wordpiece, according to our byte-pair encoding, and should not be compared to per-word perplexities.}
+\caption{Transformer架构的变种。未列出的值与基础模型相同。所有指标均在英语到德语翻译开发集newstest2013上进行评估。列出的困惑度是基于我们的字节对编码的每词片段的困惑度，不应与每单词的困惑度进行比较。}
 \label{tab:variations}
 \begin{center}
 \vspace{-2mm}
@@ -340,7 +340,7 @@ big & 6 & 1024 & 4096 & 16 & & & 0.3 & & 300K & \textbf{4.33} & \textbf{26.4} & 
 
 \begin{table}[t]
 \begin{center}
-\caption{The Transformer generalizes well to English constituency parsing (Results are on Section 23 of WSJ)}
+\caption{Transformer在英语成分句法分析上表现出良好的泛化能力（结果基于WSJ的第23部分）。}
 \label{tab:parsing-results}
 \vspace{-2mm}
 %\scalebox{1.0}{
@@ -380,7 +380,7 @@ Dyer et al. (2016) \cite{dyer-rnng:16}
 
 为了评估Transformer是否能够泛化到其他任务，我们在英语成分句法分析上进行了实验。这一任务提出了特定的挑战：输出受到强烈的结构约束，并且比输入长得多。此外，RNN序列到序列模型在小数据情况下未能取得最先进的结果。
 
-我们在Penn Treebank的《华尔街日报》（WSJ）部分上训练了一个4层的Transformer，$d_{model} = 1024$，大约有40K个训练句子。我们还在半监督环境下进行了训练，使用了更大的高置信度和BerkleyParser语料库，大约包含17M个句子。对于仅使用WSJ的设置，我们使用了16K个标记的词汇表；对于半监督设置，我们使用了32K个标记的词汇表。
+我们在Penn Treebank的《华尔街日报》（WSJ）部分上训练了一个4层的Transformer，$d_{model} = 1024$，大约有40K个训练句子。我们还在半监督环境下进行了训练，使用了更大的高置信度和BerkleyParser语料库，大约包含17M个句子。对于仅使用WSJ的设置，我们使用了16K个token的词汇表；对于半监督设置，我们使用了32K个token的词汇表。
 
 我们仅进行了少量实验以选择丢弃率（包括注意力和残差丢弃，参见第~\ref{sec:reg}节）、学习率和束大小，这些实验均在Section 22开发集上进行，其他参数则与英语到德语基础翻译模型保持不变。在推理过程中，我们将最大输出长度增加到输入长度加$300$。对于仅使用WSJ和半监督设置，我们使用了束大小为$21$和$\alpha=0.3$。
 
@@ -390,11 +390,11 @@ Dyer et al. (2016) \cite{dyer-rnng:16}
 
 \section{结论}
 
-在这项工作中，我们提出了Transformer，这是第一个完全基于注意力的序列转换模型，它用多头自注意力取代了编码器-解码器架构中最常用的循环层。
+在这项工作中，我们提出了Transformer，这是第一个完全基于注意力机制的序列转换模型，它用多头自注意力机制取代了编码器-解码器架构中最常用的循环层。
 
 对于翻译任务，Transformer的训练速度明显快于基于循环或卷积层的架构。在WMT 2014英语到德语和WMT 2014英语到法语翻译任务中，我们取得了新的最先进成果。在前一个任务中，我们的最佳模型甚至优于所有之前报告的集成模型。
 
-我们对基于注意力的模型的未来感到兴奋，并计划将其应用于其他任务。我们计划将Transformer扩展到涉及文本以外的输入和输出模态的问题，并研究局部受限的注意力机制，以有效处理图像、音频和视频等大型输入和输出。
+我们对基于注意力机制的模型的未来感到兴奋，并计划将其应用于其他任务。我们计划将Transformer扩展到涉及文本以外的输入和输出模态的问题，并研究局部受限的注意力机制，以有效处理图像、音频和视频等大型输入和输出。
 
 使生成过程减少顺序性是我们的另一个研究目标。
 
@@ -404,19 +404,19 @@ Dyer et al. (2016) \cite{dyer-rnng:16}
 \section*{Attention Visualizations}\label{sec:viz-att}
 \begin{figure*}[h]
 {\includegraphics[width=\textwidth, trim=0 0 0 36, clip]{./vis/making_more_difficult5_new.pdf}}
-\caption{An example of the attention mechanism following long-distance dependencies in the encoder self-attention in layer 5 of 6. Many of the attention heads attend to a distant dependency of the verb `making', completing the phrase `making...more difficult'.  Attentions here shown only for the word `making'. Different colors represent different heads. Best viewed in color.}
+\caption{一个展示编码器自注意力机制在6层中的第5层中处理长距离依赖关系的示例。许多注意力头关注动词`making'的远距离依赖，补全了短语`making...more difficult'。这里的注意力仅展示了单词`making'。不同颜色代表不同的注意力头。建议以彩色查看最佳效果。}
 \end{figure*}
 
 \begin{figure*}
 {\includegraphics[width=\textwidth, trim=0 0 0 45, clip]{./vis/anaphora_resolution_new.pdf}}
 {\includegraphics[width=\textwidth, trim=0 0 0 37, clip]{./vis/anaphora_resolution2_new.pdf}}
-\caption{Two attention heads, also in layer 5 of 6, apparently involved in anaphora resolution. Top: Full attentions for head 5. Bottom: Isolated attentions from just the word `its' for attention heads 5 and 6. Note that the attentions are very sharp for this word.}
+\caption{同样位于6层中的第5层的两个注意力头，显然参与了指代消解任务。上图：第5个注意力头的完整注意力分布。下图：仅针对单词`its'的第5和第6个注意力头的独立注意力分布。注意，对于这个词，注意力分布非常集中。}
 \end{figure*}
 
 \begin{figure*}
 {\includegraphics[width=\textwidth, trim=0 0 0 36, clip]{./vis/attending_to_head_new.pdf}}
 {\includegraphics[width=\textwidth, trim=0 0 0 36, clip]{./vis/attending_to_head2_new.pdf}}
-\caption{Many of the attention heads exhibit behaviour that seems related to the structure of the sentence. We give two such examples above, from two different heads from the encoder self-attention at layer 5 of 6. The heads clearly learned to perform different tasks.}
+\caption{许多注意力头表现出的行为似乎与句子的结构有关。我们在上面给出了两个这样的示例，分别来自6层中第5层的编码器自注意力的两个不同注意力头。这些注意力头显然学会了执行不同的任务。}
 \end{figure*}
 
 \end{document}
